@@ -96,27 +96,43 @@ public class Employee {
 
 
     public Employee validateObject() {
+        int errorCount = 0;
+        int designationError = 0;
+        int dateError = 0;
         if (!(this.Name.matches("[a-zA-Z ]+"))) {
-            this.HasError = true;
+            errorCount++;
             ErrorMessage.add("Name");
+        }else{
+            if(ErrorMessage.contains("Name")){
+                ErrorMessage.remove("Name");
+            }
         }
 
         if (!(this.Department.matches("[a-zA-Z0-9-_* ]+"))) {
-            this.HasError = true;
+            errorCount++;
             ErrorMessage.add("Department");
+        }else{
+            if(ErrorMessage.contains("Department")){
+                ErrorMessage.remove("Department");
+            }
         }
 
         try {
             String processedDesignationString = this.Designation.replaceAll("\\s+", "").toLowerCase();
             designation.valueOf(processedDesignationString);
         } catch (Exception e) {
-            this.HasError = true;
+            errorCount++;
+            designationError++;
             ErrorMessage.add("Designation");
         }
 
         if (!(this.Salary.matches("[0-9]+"))) {
-            this.HasError = true;
+            errorCount++;
             ErrorMessage.add("Salary");
+        }else{
+            if(ErrorMessage.contains("Salary")){
+                ErrorMessage.remove("Salary");
+            }
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -124,9 +140,19 @@ public class Employee {
         try {
             dateFormat.parse(this.JoiningDate.trim());
         } catch (ParseException e) {
-            this.HasError = true;
+            errorCount++;
+            dateError++;
             ErrorMessage.add("JoiningDate");
         }
+        
+        if(designationError == 0 && ErrorMessage.contains("Designation")){
+            ErrorMessage.remove("Designation");
+        }
+        if(dateError == 0 && ErrorMessage.contains("JoiningDate")){
+            ErrorMessage.remove("JoiningDate");
+        }
+        
+        HasError = errorCount > 0;
 
         return this;
     }

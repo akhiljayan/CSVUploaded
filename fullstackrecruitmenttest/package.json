@@ -10,6 +10,8 @@
     "bootstrap": "^4.2.1",
     "rc-pagination": "^1.17.8",
     "react": "^16.5.2",
+    "material-ui": "^0.20.2",
+    "react-tap-event-plugin": "^3.0.3",
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.5.2",
     "react-scripts": "1.1.5"

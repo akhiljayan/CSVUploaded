@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "rc-pagination/assets/index.css";
 import Pagination from "rc-pagination";
 import axios from "axios";
+import EmployeeEditForm from './employeeEditForm';
 import {
   Modal,
   Button,
@@ -13,7 +14,8 @@ import {
 
 class ShowData extends React.Component {
   state = {
-    show: false
+    show: false,
+    empItem : {}
   };
 
   changePage(page) {
@@ -30,12 +32,20 @@ class ShowData extends React.Component {
   }
 
   handleClose() {
-    this.setState({ show: false });
+    this.setState({ show: false, empItem: {} });
   }
 
+  handleShow = (item) => {
+    this.setState({ show: true, empItem: item });
+  };
 
-  handleShow = () => {
-    this.setState({ show: true });
+  setErrorMessage = (errorMessage) => {
+    return "aliya set";
+  };
+
+  handleFormSave = (newEmp) => {
+    this.props.onEdit(newEmp);
+    this.handleClose();
   };
 
   render() {
@@ -50,7 +60,7 @@ class ShowData extends React.Component {
       <div>
         <div className="container">
           <div className="text-center">
-            <table className="table table-hover table-border">
+            <table className="table table-hover table-border data-table-view">
               <thead>
                 <tr>
                   <th scope="col">#</th>
@@ -75,26 +85,40 @@ class ShowData extends React.Component {
                     <td>{item.Salary}</td>
                     <td>{item.JoiningDate}</td>
                     <td>
-                      <a href="#" onClick={() => this.handleShow()}>
-                        <FontAwesomeIcon icon="edit" />
+                      {item.HasError ? (
+                        <a title="" className="p-10 cursor-pointer">
+                          <FontAwesomeIcon
+                            icon="exclamation-triangle"
+                            className="red-color"
+                          />
+                        </a>
+                      ) : (
+                        <span />
+                      )}
+
+                      <a
+                        href="#"
+                        className={item.HasError ? "p-10" : "p-10"}
+                        onClick={() => this.handleShow(item)}
+                      >
+                        <FontAwesomeIcon icon="edit" className="" />
                       </a>
+                     
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <Pagination
-              className="ant-pagination"
-              defaultCurrent={this.props.currentPage}
-              total={this.props.totalCount}
-              onChange={this.props.pageChange}
-            />
           </div>
         </div>
         <hr />
-        <Button bsStyle="primary" bsSize="large" onClick={() => this.handleShow()}>
-          <FontAwesomeIcon icon="edit" />
-        </Button>
+        <Pagination
+          className="ant-pagination"
+          defaultCurrent={this.props.currentPage}
+          total={this.props.totalCount}
+          onChange={this.props.pageChange}
+        />
+
         <Modal
           show={this.state.show}
           animation={false}
@@ -103,41 +127,15 @@ class ShowData extends React.Component {
           aria-labelledby="contained-modal-title"
           backdropClassName="model-back-grnd"
         >
-          <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
+          <Modal.Header>
+            <Modal.Title>Edit details of {this.state.empItem.Name}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <h4>Text in a modal</h4>
-            <p>
-              Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-            </p>
-            <h4>Popover in a modal</h4>
-            <p>
-              there is a{" "}
-              <OverlayTrigger overlay={popover}>
-                <a href="#popover">popover</a>
-              </OverlayTrigger>{" "}
-              here
-            </p>
-            <h4>Tooltips in a modal</h4>
-            <p>
-              there is a{" "}
-              <OverlayTrigger overlay={tooltip}>
-                <a href="#tooltip">tooltip</a>
-              </OverlayTrigger>{" "}
-              here
-            </p>
-            <hr />
-            <h4>Overflowing text to show scroll behavior</h4>
-            <p>
-              Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-              dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
-              ac consectetur ac, vestibulum at eros.
-            </p>
+            <EmployeeEditForm employee={this.state.empItem} onSave={(newEmp)=>this.handleFormSave(newEmp)} onClose={() => this.handleClose()}/>
           </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={()=>this.handleClose()}>Close</Button>
-          </Modal.Footer>
+          {/* <Modal.Footer>
+            <Button onClick={() => this.handleClose()}>Close</Button>
+          </Modal.Footer> */}
         </Modal>
       </div>
     );

@@ -1,13 +1,91 @@
+html {
+  height: 100%;
+}
+
 body {
+  min-height: 100%;
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  background-image: url("background.jpg");
+  background-repeat: repeat;
 }
 
-.table-border{
-	border: 1px solid #dee2e6;
+.table-border {
+  border: 1px solid #dee2e6;
 }
 
-.model-back-grnd{
+.model-back-grnd {
   background-color: #00000073 !important;
 }
+
+.custom-file-label.browse-label {
+  display: inline-block !important;
+  text-align: left !important;
+}
+
+.center {
+  margin: auto;
+  width: 80%;
+  padding: 10px;
+}
+
+.main-pannel {
+  margin-top: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+}
+
+.data-table-view {
+  background-color: white !important;
+  border-radius: 10px;
+}
+
+.red-color{
+  color: red;
+}
+
+.p-10{
+  padding:10px;
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+
+.pull-right{
+  float: right;
+}
+
+.pull-left{ 
+  float: left;
+}
+
+.App{
+  text-align: unset !important;
+}
+
+.form-group.has-error > label.control-label{
+  color:red;
+}
+
+.form-group.has-error > input.form-control{
+  border:1px solid red !important;
+}
+
+.form-group.has-error > span.help-block{
+  color:red;
+}
+
+.m-r-5{
+  margin-right:5px;
+}
+
+.m-l-5{
+  margin-left:5px;
+}
+
+.download-button{
+  padding: 10px 40px 10px 40px;
+}
+

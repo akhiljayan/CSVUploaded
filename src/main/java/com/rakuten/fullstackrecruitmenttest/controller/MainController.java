@@ -5,10 +5,14 @@ import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
 import com.rakuten.model.Employee;
+import com.rakuten.model.PagedEmployeeDao;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import static java.util.Arrays.sort;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +40,6 @@ public class MainController {
         return "test";
     }
 
-
     @RequestMapping(value = "/upload", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String uploadMethod(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
         Gson gson = new Gson();
@@ -52,18 +56,25 @@ public class MainController {
         try {
             List<Employee> emps = parseCSVFileLineByLine(file.getInputStream());
             StoreInFactory(emps);
-            
-            Page<Employee> pagedEmp = new PageImpl<>(emps, new PageRequest(1, 10), emps.size());
-            
-            Page<Employee> bookPage = new PageImpl<>(emps, PageRequest.of(1, 10), emps.size());
-            
-            
-            String json = gson.toJson(emps);
+
+            PagedEmployeeDao pagedEmp = getPages(emps, 10, 1);
+
+            String json = gson.toJson(pagedEmp);
             return json;
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("message", "Invalid request");
             return "redirect:uploadStatus";
         }
+    }
+
+    @GetMapping("/employees/{page}")
+    public String getPagedEmployees(@PathVariable Integer page) {
+        Gson gson = new Gson();
+        SingleonClass factory = SingleonClass.getInstance();
+        List<Employee> emps = factory.getAllEmployees();
+        PagedEmployeeDao pagedEmp = getPages(emps, 10, page);
+        String json = gson.toJson(pagedEmp);
+        return json;
     }
 
     private List<Employee> parseCSVFileLineByLine(InputStream inputStream) {
@@ -98,5 +109,26 @@ public class MainController {
         factory.replaceEmployee(emps);
     }
 
+    private PagedEmployeeDao getPages(Collection<Employee> c, Integer pageSize, Integer currentPage) {
+        if (c == null) {
+            return new PagedEmployeeDao();
+        }
+        Integer totalCount = c.size();
+        List<Employee> list = new ArrayList<>(c);
+        if (pageSize == null || pageSize <= 0 || pageSize > list.size()) {
+            pageSize = list.size();
+        }
+        int numPages = (int) Math.ceil((double) list.size() / (double) pageSize);
+        List<List<Employee>> pages = new ArrayList<>(numPages);
+        for (int pageNum = 0; pageNum < numPages;) {
+            pages.add(list.subList(pageNum * pageSize, Math.min(++pageNum * pageSize, list.size())));
+        }
+        List<Employee> pagedEmployees = pages.get(currentPage - 1);
+        Integer numberOfPages = pages.size();
+
+        PagedEmployeeDao dao = new PagedEmployeeDao(pagedEmployees, currentPage, pageSize, totalCount, numberOfPages);
+
+        return dao;
+    }
 
 }

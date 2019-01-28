@@ -3,7 +3,7 @@ import axios from "axios";
 import ShowData from "./showData";
 
 class Main extends Component {
-  state = { file: null, loaded: 0, dataItems:[] };
+  state = { file: null, loaded: 0, dataItems:{"Employees" : []}, currentPage:0, pageSize:10, totalCount:0 };
   ping() {
     axios.get("http://localhost:8080/test").then(
       res => {
@@ -35,30 +35,33 @@ class Main extends Component {
       data: formData
     }).then(result =>{
       console.log(result);
-      this.setState({dataItems : result.data});
+      this.setState({
+		  dataItems : result.data, 
+		  currentPage :result.data.CurrentPage,
+		  pageSize : result.data.PageSize,
+		  totalCount: result.data.TotalCount
+		});
     });
   };
+  
+  handlePageChange = (page)=>{
+	  let url = "http://localhost:8080/employees/"+page;
+		axios.get(url).then(
+		  result => {
+			  console.log(result);
+			  this.setState({
+				  dataItems : result.data, 
+				  currentPage :result.data.CurrentPage,
+				  pageSize : result.data.PageSize,
+				  totalCount: result.data.TotalCount
+				});
+		  },
+		  err => {
+			alert("Server rejected response with: " + err);
+		  }
+		);
+  }
 
-  uploadFile = event => {
-    event.preventDefault();
-    const url = "http://localhost:8080/upload";
-    const formData = new FormData();
-    formData.append("file", this.state.file);
-    const config = {
-      headers: {
-        "content-type": "multipart/form-data"
-      }
-    };
-
-    fetch(url, {
-      mode: "no-cors",
-      method: "POST",
-      body: formData,
-      config: config
-    }).then((result) => {
-      console.log(result);
-    });
-  };
 
   handleChange = event => {
     this.setState({
@@ -81,7 +84,9 @@ class Main extends Component {
             />
             <button onClick={event => this.handleSubmit(event)}> Submit </button>
           </form>
-          <ShowData data={this.state.dataItems} page={1}/>
+		  {this.state.dataItems.Employees.length > 0 ? (
+			<ShowData data={this.state.dataItems} currentPage={this.state.currentPage} totalCount={this.state.totalCount} pageSize={this.state.pageSize} pageChange={this.handlePageChange}/>
+		  ) : (<span>{" "}</span>)}
         </div>  
       </div>
     );

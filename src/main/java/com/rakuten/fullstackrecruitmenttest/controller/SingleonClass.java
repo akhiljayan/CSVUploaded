@@ -31,4 +31,8 @@ public class SingleonClass {
         employees = null;
         this.employees = emp;
     }
+    
+    public List<Employee> getAllEmployees(){
+        return this.employees;
+    }
 }

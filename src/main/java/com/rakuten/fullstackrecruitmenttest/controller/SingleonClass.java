@@ -5,7 +5,7 @@
  */
 package com.rakuten.fullstackrecruitmenttest.controller;
 
-import com.rakuten.model.Employee;
+import com.rakuten.fullstackrecruitmenttest.model.Employee;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class SingleonClass {
         return singleton;
     }
 
-    protected void replaceEmployee(List<Employee> emp) {
+    public void replaceEmployee(List<Employee> emp) {
         System.out.println("demoMethod for singleton");
         employees = null;
         this.employees = emp;

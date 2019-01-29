@@ -26,6 +26,10 @@ class Main extends Component {
 
   handleSubmit = event => {
     event.preventDefault();
+    if(!this.state.file){
+      alert("Please select a file");
+      return;
+    }
     let formData = new FormData();
     formData.append("file", this.state.file);
     const config = {
@@ -72,6 +76,10 @@ class Main extends Component {
   };
 
   handleChange = event => {
+    if(event.target.files[0].name.substr(event.target.files[0].name.length - 3) !== "csv"){
+      alert("Invalid File");
+      return;
+    }
     let fileName = event.target.files[0].name;
     this.setState({
       file: event.target.files[0],
@@ -101,9 +109,6 @@ class Main extends Component {
       }
     );
   };
-
-
-  
 
   handleEdit = newEmp => {
     const url = "http://localhost:8080/edit/" + this.state.currentPage;

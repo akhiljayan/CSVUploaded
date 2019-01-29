@@ -1,12 +1,10 @@
 package com.rakuten.fullstackrecruitmenttest.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
-import com.rakuten.model.Employee;
-import com.rakuten.model.PagedEmployeeDao;
+import com.rakuten.fullstackrecruitmenttest.model.Employee;
+import com.rakuten.fullstackrecruitmenttest.model.PagedEmployeeDao;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -16,16 +14,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import static java.util.Arrays.sort;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,101 +31,38 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.rakuten.fullstackrecruitmenttest.services.EmployeeService;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class MainController {
 
-    @GetMapping("/test")
-    @CrossOrigin(origins = "*")
-    public String testMethod() {
-        return "test";
-    }
+    @Autowired
+    public EmployeeService _service;
 
-    @RequestMapping(value = "/upload", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String uploadMethod(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
-        Gson gson = new Gson();
-        if (!"csv".equals(file.getOriginalFilename().substring(file.getOriginalFilename().length() - 3))) {
-            redirectAttributes.addFlashAttribute("message", "Invalid file format");
-            return "redirect:uploadStatus";
-        }
-        if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("message", "No File is Present");
-            return "redirect:uploadStatus";
-        }
-        try {
-            List<Employee> emps = parseCSVFileLineByLine(file.getInputStream());
-            StoreInFactory(emps);
-
-            PagedEmployeeDao pagedEmp = getPages(emps, 10, 1);
-
-            String json = gson.toJson(pagedEmp);
-            return json;
-        } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("message", "Invalid request");
-            return "redirect:uploadStatus";
-        }
+    @RequestMapping(value = "/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String uploadMethod(@RequestParam("file") MultipartFile file) {
+        return _service.uploadFileToFactory(file);
     }
 
     @RequestMapping(value = "/edit/{page}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String editRecord(InputStream input, @PathVariable Integer page) throws IOException {
-        Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> jsonMap = mapper.readValue(input, Map.class);
-
-        SingleonClass factory = SingleonClass.getInstance();
-        List<Employee> emps = factory.getAllEmployees();
-
-        Employee emp = emps.stream().filter(e -> jsonMap.get("Id").equals(e.getId())).findFirst().orElse(null);
-        emp.setName((String) jsonMap.get("Name"));
-        emp.setDepartment((String) jsonMap.get("Department"));
-        emp.setDesignation((String) jsonMap.get("Designation"));
-        emp.setSalary((String) jsonMap.get("Salary"));
-        emp.setJoiningDate((String) jsonMap.get("JoiningDate"));
-        emp.validateObject();
-
-        PagedEmployeeDao pagedEmp = getPages(emps, 10, page);
-        String json = gson.toJson(pagedEmp);
-        return json;
+        return _service.editEmployeeRecord(input, page);
     }
 
     @GetMapping("/employees/{page}")
     public String getPagedEmployees(@PathVariable Integer page) {
-        Gson gson = new Gson();
-        SingleonClass factory = SingleonClass.getInstance();
-        List<Employee> emps = factory.getAllEmployees();
-        PagedEmployeeDao pagedEmp = getPages(emps, 10, page);
-        String json = gson.toJson(pagedEmp);
-        return json;
+        return _service.getEmployeeRecordsPagination(page);
     }
 
     @GetMapping("/downloaAllCsv")
     public Response downloadAllList(@Context HttpServletResponse response) {
-        SingleonClass factory = SingleonClass.getInstance();
-        List<Employee> emps = factory.getAllEmployees();
-        String fileName = "employees_"+System.currentTimeMillis()+".csv";
-        
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("text/csv");   
-        writeListToCSV(emps,fileName);
-        return Response.ok().build();
+        return _service.downloadAllEmployeeRecords(response);
     }
-    
+
     @GetMapping("/downloaErrorCsv")
     public Response downloadErrorList(@Context HttpServletResponse response) {
-        SingleonClass factory = SingleonClass.getInstance();
-        List<Employee> emps = factory.getAllEmployees();
-        
-        List<Employee> emp = emps.stream().filter(e -> e.getHasError()).collect(Collectors.toList());
-        
-        
-        String fileName = "employees_Error_"+System.currentTimeMillis()+".csv";
-        
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("text/csv");   
-        writeListToCSV(emps,fileName);
-        return Response.ok().build();
+        return _service.downloadAllErrorEmployeeRecords(response);
     }
 
     private List<Employee> parseCSVFileLineByLine(InputStream inputStream) {
@@ -208,7 +141,7 @@ public class MainController {
             }
             bw.flush();
             bw.close();
-            
+
         } catch (UnsupportedEncodingException e) {
         } catch (FileNotFoundException e) {
         } catch (IOException e) {

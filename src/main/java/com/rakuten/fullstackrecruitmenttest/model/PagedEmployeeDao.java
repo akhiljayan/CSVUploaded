@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rakuten.model;
+package com.rakuten.fullstackrecruitmenttest.model;
 
 import java.util.Collections;
 import java.util.List;

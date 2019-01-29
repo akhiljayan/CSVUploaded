@@ -1,32 +1,25 @@
-# full-stack-recruitment-test
+# Full-stack-recruitment-test
 Basic project structure for full stack web application
 
-Client implementation:
+Front End Stack:
 
-We'd like you to use React. On top of that, use whatever front-end libraries you feel comfortable with.
+    React JS
+    React-Bootstrap
+    RC-Pagination
+    
+Back End Stack:
 
-We've set you up with a build on create-react-app. To run the client:
+    Java 8
 
-npm install
+*The is a "test.csv" file in the root folder which is been used for running unit test cases*
 
-npm start - start the client development build at http://localhost:3000
+Frontend Startup
 
-Server implementation:
+    npm install
+    npm start - start the client development build at http://localhost:3000
 
-We'd like you to use Spring Boot for server implementation.
+Backend Statup:
 
-We've set you up with a basic spring boot application structure. 
+    mvn clean install
+    mvn spring-boot:run
 
-To run the server:
-
-mvn clean install
-
-mvn spring-boot:run
-
-Submission Guidelines:
-
-Please submit your solution by sending a zip file to your Rakuten contact.
-
-The zip file should be named {yourname}.zip, and should itself contain the full-stack-recruitment-test project folder with your submission.
-
-The zip file should not include the node_modules and target folder.
